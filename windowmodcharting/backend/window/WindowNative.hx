@@ -52,13 +52,4 @@ class WindowNative
 	public static function defineWindowTitle(windowTitle:String):Void
 	{
 	}
-
-	@:functionCode('
-        #ifdef HX_WINDOWS
-        ShowWindow(wn_getMainWindow(), show ? SW_SHOW : SW_HIDE);
-        #endif
-    ')
-	public static function setWindowVisible(show:Bool):Void
-	{
-	}
 }

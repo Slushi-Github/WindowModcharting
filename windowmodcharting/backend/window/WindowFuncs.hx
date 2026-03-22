@@ -84,16 +84,11 @@ class WindowFuncs
 		#end
 	}
 
-	public static function setWindowVisible(show:Bool):Void
+	public static function setWindowVisible(show:Null<Bool>):Void
 	{
-		#if (!desktop)
-		return;
-		#end
-
-		#if !windows
+		#if (desktop)
+		if (show == null) return;
 		Application.current.window.visible = show;
-		#else
-		WindowNative.setWindowVisible(show);
 		#end
 	}
 

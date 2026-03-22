@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.2 (Hotfix)
+
+- Removed functions to change the visibility of the window on Windows, they are now handled by Lime directly.
+
 ## v0.1.2
 
 - Added `Alpha` modifier for the window, now you can change the alpha of the window using directly `lime.app.Application.current.window.opacity`, allowing work on Linux and Windows at the same time. The C++ code related to those functions has been removed.
