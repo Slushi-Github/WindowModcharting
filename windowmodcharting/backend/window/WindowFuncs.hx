@@ -168,7 +168,7 @@ class WindowFuncs
 			}
 			catch (e)
 			{
-				SlDebug.log("Error centering window: " + e);
+				WindowModManager.log("Error centering window: " + e, ERROR);
 			}
 		}
 		#end
