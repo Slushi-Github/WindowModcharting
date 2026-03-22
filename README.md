@@ -27,7 +27,7 @@ If you were hoping to find things like modifying the color of the window border 
 
 This project is made for projects based on Friday Night Funkin' (FNF) engines, but could work in others as long as they use Lime and HaxeFlixel.
 
-Get and install the library:
+Get and install the library (Not alvailable for now, but will be soon):
 
 ```bash
 haxelib install window-modcharting
@@ -36,7 +36,7 @@ haxelib install window-modcharting
 Or from GitHub:
 
 ```bash
-haxelib git window-modcharting https://github.com/Slushi-Github/Window-Modcharting.git
+haxelib git window-modcharting https://github.com/Slushi-Github/WindowModcharting.git
 ```
 
 First in your `project.xml` you must define the following:
@@ -72,9 +72,9 @@ And then in your `Main.hx` preferably put the following:
 ```haxe
 import windowmodcharting.engineImplementation.ConductorImplementation;
 
-ConductorImplementation.songPosition = () -> YOUR_CONDUCTOR.equivalentSongPosition;
+ConductorImplementation.custom_songPosition = () -> YOUR_CONDUCTOR.equivalentSongPosition;
 
-ConductorImplementation.crochet = () -> YOUR_CONDUCTOR.equivalentCrochet;
+ConductorImplementation.custom_crochet = () -> YOUR_CONDUCTOR.equivalentCrochet;
 ```
 
 In case your `Conductor` or equivalent has those methods inside an instance that hasn't been declared yet in `Main.hx`, you'll need to find where it's convenient for you to declare them for WindowModcharting — as long as it's before creating the `WindowModManager` you won't have any problems.
@@ -174,9 +174,13 @@ There are some defines you can put in your `project.xml` to customize the behavi
 
 - `WM_DONT_RESIZE_ON_END`: Does not resize the window when destroying `WindowModManager`, useful if for some reason you do something with the window after your state is destroyed.
 
+- `WM_DISABLE_EXIT_FULLSCREEN_ON_START`: Does not disable the window's fullscreen mode at the start of `WindowModManager`, but this could cause issues since WindowModcharting will no longer check whether the window is still in full-screen mode.
+
 - `WM_DONT_CHANGE_FLX_SCALE_MODE`: When `WindowModManager` is created it changes the HaxeFlixel scale mode to a custom one to make the game always have the same scale and size regardless of the game window size. If for some reason you want to disable this, add it to your `project.xml`.
 
 - `WM_FORCE_DEBUG`: Force debug messages to be output to the console even when you are not compiling in debug mode.
+
+- `WM_NO_LOGS`: Disable logging completely, useful if you don't want to see any logs at all.
 
 **Linux only:**
 
@@ -193,6 +197,8 @@ There are some defines you can put in your `project.xml` to customize the behavi
 This project is released under the [MIT license](./LICENSE.md)
 
 See the [TODO list](./TODO.md) for future features.
+
+See the [CHANGELOG](./CHANGELOG.md) for changes in the past.
 
 This was originally inspired by the modcharts system I use for my game OffBeat ([a VSRG game for Nintendo Switch](https://youtu.be/e2W7iYMqzCg)).
 

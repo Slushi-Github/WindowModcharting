@@ -29,6 +29,10 @@ class WindowFuncs
 			cutBottom: 0
 		};
 
+		#if (!desktop)
+		return zero;
+		#end
+
 		if (targetX == null)
 			targetX = window.x;
 		if (targetY == null)
@@ -82,6 +86,10 @@ class WindowFuncs
 
 	public static function setWindowVisible(show:Bool):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		#if !windows
 		Application.current.window.visible = show;
 		#else
@@ -95,20 +103,28 @@ class WindowFuncs
 	 */
 	public static function defineWindowTitle(windowTitle:String):Void
 	{
-		#if windows
+		#if (windows && desktop)
 		WindowNative.defineWindowTitle(windowTitle);
 		#end
 	}
 
 	public static function setWindowOpacity(opacity:Null<Float>):Void
 	{
-		if (opacity == null || opacity < 0 || opacity > 1)
+		if (opacity == null || opacity < 0.0 || opacity > 1.0)
 			return;
-		WindowNative.setWindowAlpha(opacity);
+
+		#if (desktop)
+		Application.current.window.opacity = opacity;
+		#end
 	}
 
 	public static function getWindowAlpha():Float
 	{
-		return WindowNative.getWindowAlpha();
+		return Application.current.window.opacity;
+	}
+
+	public static function focusWindow():Void
+	{
+		Application.current.window.focus();
 	}
 }

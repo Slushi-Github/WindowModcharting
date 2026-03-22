@@ -39,7 +39,7 @@ class ConductorImplementation
 		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH")
 		return Conductor.songPosition;
         #elseif (WM_ENGINE == "V_SLICE")
-        return Conductor?.instance?.songPosition;
+        return Conductor.instance?.songPosition;
 		#elseif WM_CUSTOM_CONDUCTOR
 		if (custom_songPosition == null)
 			throw "[custom_songPosition] is null, assign the expected type to \"ConductorImplementation.custom_songPosition\".";
@@ -52,7 +52,7 @@ class ConductorImplementation
 		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH")
 		return Conductor.crochet;
         #elseif (WM_ENGINE == "V_SLICE")
-        return Conductor?.instance?.beatLengthMs;
+        return Conductor.instance?.beatLengthMs;
 		#elseif WM_CUSTOM_CONDUCTOR
 		if (custom_crochet == null)
 			throw "[custom_crochet] is null, assign the expected type to \"ConductorImplementation.custom_crochet\".";

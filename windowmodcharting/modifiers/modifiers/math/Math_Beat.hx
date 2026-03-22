@@ -5,7 +5,7 @@ class Math_Beat
 	public static function getMath(beat:Float, accelTime:Float, totalTime:Float):Float
 	{
 		var fBeat = beat + accelTime;
-		var bEvenBeat = (Math.floor(fBeat) % 2) != 0;
+		final bEvenBeat = (Math.floor(fBeat) % 2) != 0;
 		if (fBeat < 0)
 			return 0;
 		fBeat -= Math.floor(fBeat);

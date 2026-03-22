@@ -42,6 +42,7 @@ class WindowModManager extends FlxBasic
 
 	private var baseX:Int = 0;
 	private var baseY:Int = 0;
+	private var baseAlpha:Float = 1.0;
 	private var baseWidth:Int = 0;
 	private var baseHeight:Int = 0;
 
@@ -51,6 +52,7 @@ class WindowModManager extends FlxBasic
 
 	private var lastX:Int = 0;
 	private var lastY:Int = 0;
+	private var lastAlpha:Float = 1.0;
 	private var lastScaleX:Float = 1.0;
 	private var lastScaleY:Float = 1.0;
 
@@ -72,9 +74,18 @@ class WindowModManager extends FlxBasic
 		activeTweens = [];
 		scheduledEvents = [];
 
+		#if (!desktop)
+		return;
+		#end
+
 		final win = Application.current.window;
 
-		#if !WM_DONT_RESIZE_ON_START
+		#if (desktop && !WM_DISABLE_EXIT_FULLSCREEN_ON_START)
+		if (win.fullscreen)
+			win.fullscreen = false;
+		#end
+
+		#if (desktop && !WM_DONT_RESIZE_ON_START)
 		WindowFuncs.resizeGame(win.width, win.height, true, 1);
 		#end
 
@@ -82,6 +93,7 @@ class WindowModManager extends FlxBasic
 		baseY = win.y;
 		baseWidth = win.width;
 		baseHeight = win.height;
+		baseAlpha = win.opacity;
 
 		lastX = baseX;
 		lastY = baseY;
@@ -103,6 +115,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function prepareMod(tag:String, modifier:String):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		final modClass = resolveClass(modifier);
 		if (modClass == null)
 		{
@@ -120,6 +136,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function setMod(beat:Float, props:Dynamic):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		scheduleEvent(beat, function()
 		{
 			for (field in Reflect.fields(props))
@@ -143,6 +163,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function easeMod(beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		scheduleEvent(beat, function()
 		{
 			for (field in Reflect.fields(props))
@@ -164,6 +188,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function setModSubValue(tag:String, beat:Float, props:Dynamic):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		scheduleEvent(beat, function()
 		{
 			if (!preparedMods.exists(tag))
@@ -186,6 +214,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function easeModSubValue(tag:String, beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		scheduleEvent(beat, function()
 		{
 			if (!preparedMods.exists(tag))
@@ -204,6 +236,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function pauseWindow():Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		if (paused)
 			return;
 		paused = true;
@@ -211,6 +247,7 @@ class WindowModManager extends FlxBasic
 		final win = Application.current.window;
 		win.x = baseX;
 		win.y = baseY;
+		win.opacity = baseAlpha;
 		win.resize(baseWidth, baseHeight);
 
 		#if (linux && openfl && !WM_DISBALE_GL_SCISSOR)
@@ -231,6 +268,10 @@ class WindowModManager extends FlxBasic
 	 */
 	public function resumeWindow():Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		if (!paused)
 			return;
 		paused = false;
@@ -243,6 +284,7 @@ class WindowModManager extends FlxBasic
 		lastCutBottom = -1;
 		lastScaleX = -1;
 		lastScaleY = -1;
+		lastAlpha = -1;
 
 		#if !WM_DONT_CHANGE_FLX_SCALE_MODE
 		FlxG.scaleMode = new WindowDanceScaleMode(baseWidth, baseHeight);
@@ -261,14 +303,18 @@ class WindowModManager extends FlxBasic
 
 	override public function update(elapsed:Float):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		super.update(elapsed);
 
 		if (!active || paused)
 			return;
 
-		WindowsFuncs.defineWindowTitle(Application.current.window.title);
+		WindowFuncs.defineWindowTitle(Application.current.window.title);
 
-		var beat = getCurrentBeat();
+		final beat = getCurrentBeat();
 
 		var i = 0;
 		while (i < scheduledEvents.length)
@@ -300,6 +346,10 @@ class WindowModManager extends FlxBasic
 
 	private function applyToWindow(beat:Float):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		var combined:WindowModResult = {
 			x: 0,
 			y: 0,
@@ -311,9 +361,10 @@ class WindowModManager extends FlxBasic
 
 		for (tag in preparedMods.keys())
 		{
-			var r = preparedMods.get(tag).instance.calculate(beat);
+			final r = preparedMods.get(tag).instance.calculate(beat);
 			combined.x += r.x;
 			combined.y += r.y;
+			combined.alpha *= r.alpha;
 			combined.scaleX *= r.scaleX;
 			combined.scaleY *= r.scaleY;
 			combined.z += r.z;
@@ -321,21 +372,25 @@ class WindowModManager extends FlxBasic
 
 		final win = Application.current.window;
 
-		var targetW = Std.int(baseWidth * combined.scaleX);
-		var targetH = Std.int(baseHeight * combined.scaleY);
+		if (lastAlpha != combined.alpha)
+			WindowFuncs.setWindowOpacity(combined.alpha);
+		lastAlpha = combined.alpha;
 
-		var centerOffsetX = Std.int((baseWidth - targetW) / 2);
-		var centerOffsetY = Std.int((baseHeight - targetH) / 2);
+		final targetW = Std.int(baseWidth * combined.scaleX);
+		final targetH = Std.int(baseHeight * combined.scaleY);
 
-		var targetX = baseX + Std.int(combined.x) + centerOffsetX;
-		var targetY = baseY + Std.int(combined.y) + centerOffsetY;
+		final centerOffsetX = Std.int((baseWidth - targetW) / 2);
+		final centerOffsetY = Std.int((baseHeight - targetH) / 2);
 
-		var cut = WindowFuncs.moveWindow(targetX, targetY, targetW, targetH);
+		final targetX = baseX + Std.int(combined.x) + centerOffsetX;
+		final targetY = baseY + Std.int(combined.y) + centerOffsetY;
+
+		final cut = WindowFuncs.moveWindow(targetX, targetY, targetW, targetH);
 		lastX = targetX;
 		lastY = targetY;
 
-		var visibleW = targetW - cut.cutLeft - cut.cutRight;
-		var visibleH = targetH - cut.cutTop - cut.cutBottom;
+		final visibleW = targetW - cut.cutLeft - cut.cutRight;
+		final visibleH = targetH - cut.cutTop - cut.cutBottom;
 
 		#if linux
 		#if (openfl && !WM_DISBALE_GL_SCISSOR)
@@ -345,9 +400,9 @@ class WindowModManager extends FlxBasic
 			WindowNativeGL.clearScissor();
 		#end
 
-		var xChanged = cut.cutLeft != lastCutLeft || cut.cutRight != lastCutRight;
-		var yChanged = Math.abs(cut.cutTop - lastCutTop) > 2 || Math.abs(cut.cutBottom - lastCutBottom) > 2;
-		var scaleChanged = combined.scaleX != lastScaleX || combined.scaleY != lastScaleY;
+		final xChanged = cut.cutLeft != lastCutLeft || cut.cutRight != lastCutRight;
+		final yChanged = Math.abs(cut.cutTop - lastCutTop) > 2 || Math.abs(cut.cutBottom - lastCutBottom) > 2;
+		final scaleChanged = combined.scaleX != lastScaleX || combined.scaleY != lastScaleY;
 
 		if ((xChanged || yChanged || scaleChanged) && visibleW > 0 && visibleH > 0)
 		{
@@ -384,6 +439,10 @@ class WindowModManager extends FlxBasic
 
 	private function scheduleEvent(beat:Float, cb:Void->Void):Void
 	{
+		#if (!desktop)
+		return;
+		#end
+
 		scheduledEvents.push({beat: beat, callback: cb, executed: false});
 		scheduledEvents.sort((a, b) -> a.beat < b.beat ? -1 : a.beat > b.beat ? 1 : 0);
 	}
@@ -410,14 +469,17 @@ class WindowModManager extends FlxBasic
 		clear();
 		super.destroy();
 
-		#if !WM_DONT_RESIZE_ON_END
 		final win = Application.current.window;
-		win.x = baseX;
-		win.y = baseY;
+
+		#if (desktop && !WM_DONT_RESIZE_ON_END)
 		win.resize(baseWidth, baseHeight);
 		#end
 
-		#if (linux && openfl && !WM_DISBALE_GL_SCISSOR)
+		win.x = baseX;
+		win.y = baseY;
+		win.opacity = baseAlpha;
+
+		#if (linux && desktop && openfl && !WM_DISBALE_GL_SCISSOR)
 		WindowNativeGL.clearScissor();
 		#end
 
@@ -429,7 +491,11 @@ class WindowModManager extends FlxBasic
 
 	private static function log(msg:Dynamic, type:WMLogLevel = WMLogLevel.INFO, ?pos:PosInfos):Void
 	{
-		#if (!debug && !WM_FORCE_DEBUG)
+		#if WM_NO_LOGS
+		return;
+		#end
+
+		#if (!debug || !WM_FORCE_DEBUG)
 		if (type == WMLogLevel.DEBUG)
 			return;
 		#end
