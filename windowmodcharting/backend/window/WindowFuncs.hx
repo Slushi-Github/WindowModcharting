@@ -122,4 +122,64 @@ class WindowFuncs
 	{
 		Application.current.window.focus();
 	}
+
+	/**
+	 * Resize the game to a custom size
+	 * 
+	 * Thanks AlejoGDOfficial for the code from ALE Psych
+	 * 
+	 * @param width The width of the game
+	 * @param height The height of the game
+	 * @param centerWindow If the window should be centered
+	 * @param scale The scale of the game
+	 */
+	public static function resizeGame(width:Int, height:Int, ?centerWindow:Bool = true, ?scale:Null<Float> = 1):Void {
+		Reflect.setProperty(FlxG, 'initialWidth', width);
+		Reflect.setProperty(FlxG, 'initialHeight', height);
+
+		// Prevent divide or multiplicate by zero
+		if (scale == null || scale <= 0) scale = 1;
+
+		FlxG.resizeGame(width, height);
+		FlxG.resizeWindow(Math.floor(width * scale), Math.floor(height * scale));
+
+		#if !mobile
+		FlxG.fullscreen = false;
+
+		if (centerWindow)
+		{
+			/**
+			 * WTF ``display`` or ``bounds`` would be null? Well, it seems 
+			 * that it is possible for it to be null, but even if
+			 * you have a ``display``...
+			 */
+			try {
+				if (Application.current.window != null)
+				{
+					if (Application.current.window.display != null)
+					{
+						if (Application.current.window.display.bounds != null)
+						{
+							Application.current.window.x = Std.int((Application.current.window.display.bounds.width - Application.current.window.width) / 2);
+							Application.current.window.y = Std.int((Application.current.window.display.bounds.height - Application.current.window.height) / 2);
+						}
+					}
+				}
+			}
+			catch (e)
+			{
+				SlDebug.log("Error centering window: " + e);
+			}
+		}
+		#end
+
+		for (camera in FlxG.cameras.list)
+		{
+			if (camera == null) continue;
+			camera.width = width;
+			camera.height = height;
+		}
+
+		// 	FlxG.scaleMode = new oneshot.backend.FullScreenScaleMode();
+    }
 }
