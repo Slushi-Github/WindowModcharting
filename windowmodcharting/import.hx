@@ -12,6 +12,7 @@ import windowmodcharting.modifiers.modifiers.math.*;
 import windowmodcharting.modifiers.modifiers.*;
 
 import windowmodcharting.modifiers.WindowModifierBase;
+import windowmodcharting.modifiers.WindowModifierCallback;
 import windowmodcharting.modifiers.WindowModResult;
 
 import windowmodcharting.WindowModManager;

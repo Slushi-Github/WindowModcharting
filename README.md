@@ -128,6 +128,30 @@ windowMod.prepareMod("MyTag", "MyModifier");
 
 The list of available modifiers can be found [here](readme/documentation/modifiers.md).
 
+### Add a custom modifier:
+
+You can create your own modifiers without modifying the source code of WindowModcharting!:
+
+```haxe
+windowMod.registerCustomMod(
+    "bouncy",
+    function(result, beat, mod) {
+        // Each bounce lasts one beat, offset controllable via subValues
+        final offset = mod.getSubValue("offset");
+        final t = ((beat + offset) % 1.0); // 0..1 within the beat
+
+        // Squash & stretch: flattens at the bottom, stretches going up
+        final squash = Math.sin(t * Math.PI); // 0->1->0
+        result.y      =  mod.value * (1 - squash); // drops when squash is 0
+        result.scaleY = 1 - (squash * 0.3);         // squashes at the peak
+        result.scaleX = 1 + (squash * 0.15);         // widens at the same time
+    },
+    ["offset" => 0.0]
+);
+```
+
+The first parameter is the name of the modifier, the second is the function that will be called, and the third is an array of initial sub-values. For initialize and use the modifier use `windowMod.prepareMod` as usual.
+
 ### Events:
 
 Set a value:
@@ -182,11 +206,17 @@ There are some defines you can put in your `project.xml` to customize the behavi
 
 - `WM_DISABLE_EXIT_FULLSCREEN_ON_START`: Does not disable the window's fullscreen mode at the start of `WindowModManager`, but this could cause issues since WindowModcharting will no longer check whether the window is still in full-screen mode.
 
+- `WM_DISABLE_RESIZABLE_ON_START`: Does not make the window resizable at the start of `WindowModManager`.
+
 - `WM_DONT_CHANGE_FLX_SCALE_MODE`: When `WindowModManager` is created it changes the HaxeFlixel scale mode to a custom one to make the game always have the same scale and size regardless of the game window size. If for some reason you want to disable this, add it to your `project.xml`.
 
 - `WM_FORCE_DEBUG`: Force debug messages to be output to the console even when you are not compiling in debug mode.
 
 - `WM_NO_LOGS`: Disable logging completely, useful if you don't want to see any logs at all.
+
+- `WM_NO_INFO_LOGS`: Disable just info logs completely.
+
+- `WM_NO_WARNING_LOGS`: Disable just warning logs completely.
 
 **Linux only:**
 
@@ -200,7 +230,7 @@ There are some defines you can put in your `project.xml` to customize the behavi
 
 ## Special thanks
 
-- [@Nezumieepy](https://github.com/Nezumieepy): Tested the library on the following Linux desktop environments:
+- [@Nezumieepy](https://github.com/Nezumieepy): Tested the library with X11 on the following Linux desktop environments:
     * KDE Plasma 6.
     * I3wm.
     * LXQT.

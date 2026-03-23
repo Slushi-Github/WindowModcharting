@@ -37,6 +37,7 @@ typedef WinScheduledEvent =
 class WindowModManager extends FlxBasic
 {
 	private var preparedMods:Map<String, WinPreparedMod>;
+	private var customMods:Map<String, ()->WindowModifierCallback>;
 	private var activeTweens:Array<WindowModifierTween>;
 	private var scheduledEvents:Array<WinScheduledEvent>;
 
@@ -45,6 +46,9 @@ class WindowModManager extends FlxBasic
 	private var baseAlpha:Float = 1.0;
 	private var baseWidth:Int = 0;
 	private var baseHeight:Int = 0;
+
+	private var baseResizable:Bool = false;
+	private var baseFullscreen:Bool = false;
 
 	#if !WM_DONT_CHANGE_FLX_SCALE_MODE
 	private var previousFlxScaleMode:BaseScaleMode = null;
@@ -71,6 +75,7 @@ class WindowModManager extends FlxBasic
 		super();
 
 		preparedMods = new Map();
+		customMods = new Map();
 		activeTweens = [];
 		scheduledEvents = [];
 
@@ -79,11 +84,6 @@ class WindowModManager extends FlxBasic
 		#end
 
 		final win = Application.current.window;
-
-		#if (desktop && !WM_DISABLE_EXIT_FULLSCREEN_ON_START)
-		if (win.fullscreen)
-			win.fullscreen = false;
-		#end
 
 		#if (desktop && !WM_DONT_RESIZE_ON_START)
 		WindowFuncs.resizeGame(win.width, win.height, true, 1);
@@ -94,6 +94,19 @@ class WindowModManager extends FlxBasic
 		baseWidth = win.width;
 		baseHeight = win.height;
 		baseAlpha = win.opacity;
+
+		baseResizable = win.resizable;
+		baseFullscreen = win.fullscreen;
+
+		#if (desktop && !WM_DISABLE_EXIT_FULLSCREEN_ON_START)
+		if (win.fullscreen)
+			win.fullscreen = false;
+		#end
+
+		#if (desktop && !WM_DISABLE_RESIZABLE_ON_START)
+		if (win.resizable)
+			win.resizable = false;
+		#end
 
 		lastX = baseX;
 		lastY = baseY;
@@ -109,25 +122,58 @@ class WindowModManager extends FlxBasic
 	// Public API ////////////////////////////////////////
 
 	/**
-	 * Adds a mod to the list of prepared mods
-	 * @param tag The tag of the prepared mod
-	 * @param modifier The name of the mod
+	 * Registers a custom modifier factory so it can later be
+	 * instantiated by name via prepareMod().
+	 *
+	 * @param name        The modifier name to use in prepareMod()
+	 * @param applyFunc   The function that applies the modifier logic.
+	 *                    Receives (result, beat, modInstance).
+	 * @param defaultSubs Optional map of default sub-values (e.g. ["speed" => 1.0])
 	 */
-	public function prepareMod(tag:String, modifier:String):Void
+	public function registerCustomMod(
+		name:String,
+		applyFunc:(result:WindowModResult, beat:Float, mod:WindowModifierBase)->Void,
+		?defaultSubs:Map<String, Float>
+	):Void
 	{
 		#if (!desktop)
 		return;
 		#end
 
-		final modClass = resolveClass(modifier);
-		if (modClass == null)
-		{
-			log('WindowMod "$modifier" not found. Paths used: [' + Constants.MODIFIER_CLASS_PATH + modifier + '], [' + Constants.MODIFIER_CLASS_PATH + Constants.MODIFIER_CLASS_PREFIX + modifier + ']', ERROR);
-			return;
-		}
-		preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: Type.createInstance(modClass, [])});
-		log('WindowMod "$modifier" prepared as "$tag"', DEBUG);
+		customMods.set(name, function() {
+			final instance = new WindowModifierCallback(name, applyFunc);
+			if (defaultSubs != null)
+				for (k => v in defaultSubs)
+					instance.setSubValue(k, v);
+			return instance;
+		});
+		log('Custom mod "$name" registered', DEBUG);
 	}
+
+	public function prepareMod(tag:String, modifier:String):Void
+{
+    #if (!desktop)
+    return;
+    #end
+
+    // Check for custom modifiers
+    if (customMods.exists(modifier))
+    {
+        preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: customMods.get(modifier)()});
+        log('Custom mod "$modifier" prepared as "$tag"', DEBUG);
+        return;
+    }
+
+    final modClass = resolveClass(modifier);
+    if (modClass == null)
+    {
+        log('WindowMod "$modifier" not found. Paths used: [' + Constants.MODIFIER_CLASS_PATH + modifier + '], ['
+            + Constants.MODIFIER_CLASS_PATH + Constants.MODIFIER_CLASS_PREFIX + modifier + ']', ERROR);
+        return;
+    }
+    preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: Type.createInstance(modClass, [])});
+    log('WindowMod "$modifier" prepared as "$tag"', DEBUG);
+}
 
 	/**
 	 * Sets the value of a prepared mod at a specific beat
@@ -248,6 +294,8 @@ class WindowModManager extends FlxBasic
 		win.x = baseX;
 		win.y = baseY;
 		win.opacity = baseAlpha;
+		win.resizable = baseResizable;
+		win.fullscreen = baseFullscreen;
 		win.resize(baseWidth, baseHeight);
 
 		#if (linux && openfl && !WM_DISBALE_GL_SCISSOR)
@@ -285,6 +333,10 @@ class WindowModManager extends FlxBasic
 		lastScaleX = -1;
 		lastScaleY = -1;
 		lastAlpha = -1;
+
+		final win = Application.current.window;
+		win.resizable = false;
+		win.fullscreen = false;
 
 		#if !WM_DONT_CHANGE_FLX_SCALE_MODE
 		FlxG.scaleMode = new WindowDanceScaleMode(baseWidth, baseHeight);
@@ -460,6 +512,7 @@ class WindowModManager extends FlxBasic
 	public function clear():Void
 	{
 		preparedMods.clear();
+		customMods.clear();
 		activeTweens = [];
 		scheduledEvents = [];
 	}
@@ -478,6 +531,8 @@ class WindowModManager extends FlxBasic
 		win.x = baseX;
 		win.y = baseY;
 		win.opacity = baseAlpha;
+		win.resizable = baseResizable;
+		win.fullscreen = baseFullscreen;
 
 		#if (linux && desktop && openfl && !WM_DISBALE_GL_SCISSOR)
 		WindowNativeGL.clearScissor();
@@ -493,6 +548,16 @@ class WindowModManager extends FlxBasic
 	{
 		#if WM_NO_LOGS
 		return;
+		#end
+
+		#if #if WM_NO_INFO_LOGS
+		if (type == WMLogLevel.INFO)
+			return;
+		#end
+
+		#if WM_NO_WARNING_LOGS
+		if (type == WMLogLevel.WARNING)
+			return;
 		#end
 
 		#if (!debug || !WM_FORCE_DEBUG)

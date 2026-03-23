@@ -1,8 +1,18 @@
 # CHANGELOG
 
+## v0.1.5
+
+- Added support for custom modifiers without editing the library.
+
+- The `WindowModManager` now checks at the start if the window is in full-screen mode and disables it if it is, same with if it is resizable.
+
+- Added `WM_DISABLE_RESIZABLE_ON_START` define to disable the window's ability to be resized at the start of `WindowModManager`.
+
+- Added `WM_NO_INFO_LOGS`, `WM_NO_WARN_LOGS` to disable specific log types.
+
 ## v0.1.2 (Hotfix)
 
-- Removed functions to change the visibility of the window on Windows, they are now handled by Lime directly.
+- Removed functions on C++ to change the visibility of the window on Windows, they are now handled by Lime directly.
 
 ## v0.1.2
 
