@@ -49,6 +49,12 @@ First in your `project.xml` you must define the following:
 
 Replacing `YOUR_ENGINE` and `YOUR_ENGINE_VERSION` with the name and version of your engine which you can find [here](readme/documentation/supportedEngines.md).
 
+If you are on Linux, you need to install the following packages:
+
+```bash
+sudo apt install libxcb1-dev libx11-xcb-dev
+```
+
 Now include the library in your project:
 
 ```xml
@@ -191,6 +197,15 @@ There are some defines you can put in your `project.xml` to customize the behavi
 - [Modcharting Tools](https://github.com/EdwhakKB/FNF-Modcharting-Tools): Where I got my inspiration and base for creating WindowModcharting.
 
 - [Rhythm Doctor Multi Window Plugin for Linux](https://github.com/chocolateimage/rd-multiwindow-linux): Inspiration for Linux support to be able to move the game window *"outside"* the screen.
+
+## Special thanks
+
+- [@Nezumieepy](https://github.com/Nezumieepy): Tested the library on the following Linux desktop environments:
+    * KDE Plasma 6.
+    * I3wm.
+    * LXQT.
+
+    (Thanks so much!) 
 
 # License and more information
 
