@@ -550,7 +550,7 @@ class WindowModManager extends FlxBasic
 		return;
 		#end
 
-		#if #if WM_NO_INFO_LOGS
+		#if WM_NO_INFO_LOGS
 		if (type == WMLogLevel.INFO)
 			return;
 		#end
