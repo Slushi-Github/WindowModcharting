@@ -152,6 +152,35 @@ windowMod.registerCustomMod(
 
 The first parameter is the name of the modifier, the second is the function that will be called, and the third is an array of initial sub-values. For initialize and use the modifier use `windowMod.prepareMod` as usual.
 
+Using `windowMod.registerCustomModClass`, you can also pass a class that extends `WindowModifierBase` directly:
+
+```haxe
+class BouncyMod extends WindowModifierBase
+{
+    override public function new()
+    {
+        super();
+        setSubValue("offset", 0.0);
+    }
+
+    override public function applyMod(result:WindowModResult, beat:Float):Void
+    {
+        final offset = getSubValue("offset");
+        final t = ((beat + offset) % 1.0);
+        final squash = Math.sin(t * Math.PI);
+        result.y      =  value * (1 - squash);
+        result.scaleY = 1 - (squash * 0.3);
+        result.scaleX = 1 + (squash * 0.15);
+    }
+}
+
+// Register and use it just like any other modifier
+windowMod.registerCustomModFactory("bouncy", () -> new BouncyMod());
+windowMod.prepareMod("myBounce", "bouncy");
+```
+
+This approach is useful when your modifier has more complex logic, internal state, or you simply prefer organizing it as a proper class. The factory function (`() -> new BouncyMod()`) is called each time `prepareMod` creates a new instance of the modifier.
+
 ### Events:
 
 Set a value:
@@ -177,6 +206,7 @@ The `9` is the beat at which the event will occur, `4` is the duration of the tr
 Modify sub-values of a modifier:
 
 Set a value:
+
 ```haxe
 windowMod.setModSubValue("MyTag", 15, {
     effect1: 0.3
@@ -186,6 +216,7 @@ windowMod.setModSubValue("MyTag", 15, {
 `"MyTag"` is the tag of the modifier whose sub-value you want to modify, `15` is the beat at which the event will occur, and the rest is the same as the previous methods but you must put the tag of the sub-value you want to modify.
 
 Modify multiple sub-values of a modifier via transitions:
+
 ```haxe
 windowMod.easeModSubValue("MyTag", 15, 4, FlxEase.linear, {
     effect1: 6
@@ -202,11 +233,19 @@ There are some defines you can put in your `project.xml` to customize the behavi
 
 - `WM_DONT_RESIZE_ON_START`: Does not resize the window at the start of `WindowModManager`, useful if for some reason you do something with the window before your state is fully created.
 
-- `WM_DONT_RESIZE_ON_END`: Does not resize the window when destroying `WindowModManager`, useful if for some reason you do something with the window after your state is destroyed.
+- `WM_DONT_RESIZE_ON_DESTROY`: Does not resize the window when destroying `WindowModManager`, useful if for some reason you do something with the window after your state is destroyed.
 
 - `WM_DISABLE_EXIT_FULLSCREEN_ON_START`: Does not disable the window's fullscreen mode at the start of `WindowModManager`, but this could cause issues since WindowModcharting will no longer check whether the window is still in full-screen mode.
 
+- `WM_DISABLE_SET_FULLSCREEN_ON_DESTROY`: Don't restore the window's fullscreen mode when destroying `WindowModManager`.
+
 - `WM_DISABLE_RESIZABLE_ON_START`: Does not make the window resizable at the start of `WindowModManager`.
+
+- `WM_DISABLE_SET_RESIZABLE_ON_DESTROY`: Does not make the window resizable when destroying `WindowModManager`.
+
+- `WM_DISABLE_SET_NOT_MAXIMIZED_ON_START`: Does not disable the window's maximized mode at the start of `WindowModManager`.
+
+- `WM_DISABLE_SET_MAXIMIZED_ON_DESTROY`: Don't restore the window's maximized mode when destroying `WindowModManager`.
 
 - `WM_DONT_CHANGE_FLX_SCALE_MODE`: When `WindowModManager` is created it changes the HaxeFlixel scale mode to a custom one to make the game always have the same scale and size regardless of the game window size. If for some reason you want to disable this, add it to your `project.xml`.
 
@@ -229,6 +268,8 @@ There are some defines you can put in your `project.xml` to customize the behavi
 - [Rhythm Doctor Multi Window Plugin for Linux](https://github.com/chocolateimage/rd-multiwindow-linux): Inspiration for Linux support to be able to move the game window *"outside"* the screen.
 
 ## Special thanks
+
+- [@AlejoGDOfficial](https://github.com/AlejoGDOfficial): For suggesting that I create `registerCustomModFactory` using factories instead of just classes to maintain compatibility with [RuleScript](https://github.com/Kriptel/RuleScript) on [ALE Psych](https://github.com/ALE-Psych-Crew/ALE-Psych).
 
 - [@Nezumieepy](https://github.com/Nezumieepy): Tested the library with X11 on the following Linux desktop environments:
     * KDE Plasma 6.

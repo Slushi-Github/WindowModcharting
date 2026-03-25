@@ -38,6 +38,7 @@ class WindowModManager extends FlxBasic
 {
 	private var preparedMods:Map<String, WinPreparedMod>;
 	private var customMods:Map<String, ()->WindowModifierCallback>;
+	private var customModsFactories:Map<String, Void->WindowModifierBase>;
 	private var activeTweens:Array<WindowModifierTween>;
 	private var scheduledEvents:Array<WinScheduledEvent>;
 
@@ -49,6 +50,7 @@ class WindowModManager extends FlxBasic
 
 	private var baseResizable:Bool = false;
 	private var baseFullscreen:Bool = false;
+	private var baseMaximized:Bool = false;
 
 	#if !WM_DONT_CHANGE_FLX_SCALE_MODE
 	private var previousFlxScaleMode:BaseScaleMode = null;
@@ -76,6 +78,7 @@ class WindowModManager extends FlxBasic
 
 		preparedMods = new Map();
 		customMods = new Map();
+		customModsClasses = new Map();
 		activeTweens = [];
 		scheduledEvents = [];
 
@@ -97,15 +100,23 @@ class WindowModManager extends FlxBasic
 
 		baseResizable = win.resizable;
 		baseFullscreen = win.fullscreen;
+		baseMaximized = win.maximized;
 
-		#if (desktop && !WM_DISABLE_EXIT_FULLSCREEN_ON_START)
+		#if desktop
+		#if !WM_DISABLE_EXIT_FULLSCREEN_ON_START
 		if (win.fullscreen)
 			win.fullscreen = false;
 		#end
 
-		#if (desktop && !WM_DISABLE_RESIZABLE_ON_START)
+		#if !WM_DISABLE_SET_NOT_RESIZABLE_ON_START
 		if (win.resizable)
 			win.resizable = false;
+		#end
+
+		#if !WM_DISABLE_SET_NOT_MAXIMIZED_ON_START
+		if (win.maximized)
+			win.maximized = false;
+		#end
 		#end
 
 		lastX = baseX;
@@ -136,9 +147,18 @@ class WindowModManager extends FlxBasic
 		?defaultSubs:Map<String, Float>
 	):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
+
+		if (name == null || name == "" || applyFunc == null) {
+			log('Invalid parameters for registerCustomMod()', ERROR);
+			return;
+		}
+		else if (customMods.exists(name)) {
+			log('Custom mod "$name" already registered', WARNING);
+			return;
+		}
 
 		customMods.set(name, function() {
 			final instance = new WindowModifierCallback(name, applyFunc);
@@ -150,30 +170,72 @@ class WindowModManager extends FlxBasic
 		log('Custom mod "$name" registered', DEBUG);
 	}
 
+	public function registerCustomModFactory(name:String, modFactory:Void->WindowModifierBase):Void
+	{
+		#if !desktop
+		return;
+		#end
+
+		if (name == null || name == "" || modFactory == null) {
+			log('Invalid parameters for registerCustomModClass()', ERROR);
+			return;
+		}
+		else if (customModsFactories.exists(name)) {
+			log('Custom mod factory "$name" already registered', WARNING);
+			return;
+		}
+
+		customModsFactories.set(name, modFactory);
+		log('Custom mod class "$name" registered', DEBUG);
+	}
+
 	public function prepareMod(tag:String, modifier:String):Void
-{
-    #if (!desktop)
-    return;
-    #end
+	{
+		#if !desktop
+		return;
+		#end
 
-    // Check for custom modifiers
-    if (customMods.exists(modifier))
-    {
-        preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: customMods.get(modifier)()});
-        log('Custom mod "$modifier" prepared as "$tag"', DEBUG);
-        return;
-    }
+		if (tag == null || tag == "" || modifier == "") {
+			log('Invalid parameters for prepareMod()', ERROR);
+			return;
+		}
+		else if (preparedMods.exists(tag)) {
+			log('Mod "$tag" already prepared', WARNING);
+			return;
+		}
 
-    final modClass = resolveClass(modifier);
-    if (modClass == null)
-    {
-        log('WindowMod "$modifier" not found. Paths used: [' + Constants.MODIFIER_CLASS_PATH + modifier + '], ['
-            + Constants.MODIFIER_CLASS_PATH + Constants.MODIFIER_CLASS_PREFIX + modifier + ']', ERROR);
-        return;
-    }
-    preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: Type.createInstance(modClass, [])});
-    log('WindowMod "$modifier" prepared as "$tag"', DEBUG);
-}
+		// Check for custom modifiers
+		if (customMods.exists(modifier))
+		{
+			final instance = customMods.get(modifier)();
+			if (instance == null)
+				return;
+			preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: instance});
+			log('Custom mod "$modifier" prepared as "$tag"', DEBUG);
+			return;
+		}
+
+		if (customModsFactories.exists(modifier))
+		{
+			final instance = customModsFactories.get(modifier)();
+			if (instance == null)
+				return;
+			preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: instance});
+			log('Custom mod factory "$modifier" prepared as "$tag"', DEBUG);
+			return;
+		}
+
+		// Check for built-in modifiers
+		final modClass = resolveClass(modifier);
+		if (modClass == null)
+		{
+			log('WindowMod "$modifier" not found. Paths used: [' + Constants.MODIFIER_CLASS_PATH + modifier + '], ['
+				+ Constants.MODIFIER_CLASS_PATH + Constants.MODIFIER_CLASS_PREFIX + modifier + ']', ERROR);
+			return;
+		}
+		preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: Type.createInstance(modClass, [])});
+		log('WindowMod "$modifier" prepared as "$tag"', DEBUG);
+	}
 
 	/**
 	 * Sets the value of a prepared mod at a specific beat
@@ -182,9 +244,12 @@ class WindowModManager extends FlxBasic
 	 */
 	public function setMod(beat:Float, props:Dynamic):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
+
+		if (props == null)
+			return;
 
 		scheduleEvent(beat, function()
 		{
@@ -209,9 +274,12 @@ class WindowModManager extends FlxBasic
 	 */
 	public function easeMod(beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
+
+		if (duration == null || duration < 0 || easeFunc == null || props == null)
+			return;
 
 		scheduleEvent(beat, function()
 		{
@@ -234,9 +302,12 @@ class WindowModManager extends FlxBasic
 	 */
 	public function setModSubValue(tag:String, beat:Float, props:Dynamic):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
+
+		if (tag == null || tag == "" || props == null)
+			return;
 
 		scheduleEvent(beat, function()
 		{
@@ -260,9 +331,12 @@ class WindowModManager extends FlxBasic
 	 */
 	public function easeModSubValue(tag:String, beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
+
+		if (tag == null || tag == "" || duration == null || duration < 0 || easeFunc == null || props == null)
+			return;
 
 		scheduleEvent(beat, function()
 		{
@@ -282,7 +356,7 @@ class WindowModManager extends FlxBasic
 	 */
 	public function pauseWindow():Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
 
@@ -296,6 +370,7 @@ class WindowModManager extends FlxBasic
 		win.opacity = baseAlpha;
 		win.resizable = baseResizable;
 		win.fullscreen = baseFullscreen;
+		win.maximized = baseMaximized;
 		win.resize(baseWidth, baseHeight);
 
 		#if (linux && openfl && !WM_DISBALE_GL_SCISSOR)
@@ -337,6 +412,7 @@ class WindowModManager extends FlxBasic
 		final win = Application.current.window;
 		win.resizable = false;
 		win.fullscreen = false;
+		win.maximized = false;
 
 		#if !WM_DONT_CHANGE_FLX_SCALE_MODE
 		FlxG.scaleMode = new WindowDanceScaleMode(baseWidth, baseHeight);
@@ -398,7 +474,7 @@ class WindowModManager extends FlxBasic
 
 	private function applyToWindow(beat:Float):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
 
@@ -491,7 +567,7 @@ class WindowModManager extends FlxBasic
 
 	private function scheduleEvent(beat:Float, cb:Void->Void):Void
 	{
-		#if (!desktop)
+		#if !desktop
 		return;
 		#end
 
@@ -524,15 +600,27 @@ class WindowModManager extends FlxBasic
 
 		final win = Application.current.window;
 
-		#if (desktop && !WM_DONT_RESIZE_ON_END)
+		#if (desktop)
+		#if !WM_DONT_RESIZE_ON_DESTROY
 		win.resize(baseWidth, baseHeight);
 		#end
 
 		win.x = baseX;
 		win.y = baseY;
 		win.opacity = baseAlpha;
+
+		#if !WM_DISABLE_SET_RESIZABLE_ON_DESTROY
 		win.resizable = baseResizable;
+		#end
+
+		#if !WM_DISABLE_SET_FULLSCREEN_ON_DESTROY
 		win.fullscreen = baseFullscreen;
+		#end
+
+		#if !WM_DISABLE_SET_MAXIMIZED_ON_DESTROY
+		win.maximized = baseMaximized;
+		#end
+		#end
 
 		#if (linux && desktop && openfl && !WM_DISBALE_GL_SCISSOR)
 		WindowNativeGL.clearScissor();

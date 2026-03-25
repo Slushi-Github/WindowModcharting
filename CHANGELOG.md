@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## v0.2.0
+
+- Added `registerCustomModFactory()` to register custom modifiers by passing a factory
+  function (`Void->WindowModifierBase`) instead of an inline callback, useful for
+  complex modifiers organized as their own class.
+
+- `WindowModManager` now tracks and restores the maximized state of the window
+  on start, pause, resume and destroy.
+
+- Added `WM_DISABLE_SET_NOT_MAXIMIZED_ON_START` define to prevent the manager from
+  un-maximizing the window on start.
+
+- Added `WM_DISABLE_SET_NOT_RESIZABLE_ON_START` define (renamed from
+  `WM_DISABLE_RESIZABLE_ON_START`).
+
+- Added `WM_DISABLE_SET_RESIZABLE_ON_DESTROY`, `WM_DISABLE_SET_FULLSCREEN_ON_DESTROY`
+  and `WM_DISABLE_SET_MAXIMIZED_ON_DESTROY` defines to control which window properties
+  are restored when `WindowModManager` is destroyed.
+
+- Renamed define `WM_DONT_RESIZE_ON_END` to `WM_DONT_RESIZE_ON_DESTROY` for consistency.
+
+- `prepareMod()` and `registerCustomMod()` now validate their parameters and log
+  an error if they are null or empty, and warn if the tag or name is already registered.
+
 ## v0.1.5
 
 - Added support for custom modifiers without editing the library.
