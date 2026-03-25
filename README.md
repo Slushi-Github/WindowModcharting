@@ -152,7 +152,7 @@ windowMod.registerCustomMod(
 
 The first parameter is the name of the modifier, the second is the function that will be called, and the third is an array of initial sub-values. For initialize and use the modifier use `windowMod.prepareMod` as usual.
 
-Using `windowMod.registerCustomModClass`, you can also pass a class that extends `WindowModifierBase` directly:
+Using `windowMod.registerCustomModFactory`, you can also pass a class that extends `WindowModifierBase` directly:
 
 ```haxe
 class BouncyMod extends WindowModifierBase
