@@ -189,6 +189,12 @@ class WindowModManager extends FlxBasic
 		log('Custom mod class "$name" registered', DEBUG);
 	}
 
+	/**
+	 * Prepares a modifier for later use.
+	 *
+	 * @param tag         The tag to use for the prepared modifier
+	 * @param modifier    The name of the modifier to prepare
+	 */
 	public function prepareMod(tag:String, modifier:String):Void
 	{
 		#if !desktop
