@@ -78,7 +78,7 @@ class WindowModManager extends FlxBasic
 
 		preparedMods = new Map();
 		customMods = new Map();
-		customModsClasses = new Map();
+		customModsFactories = new Map();
 		activeTweens = [];
 		scheduledEvents = [];
 
@@ -589,6 +589,7 @@ class WindowModManager extends FlxBasic
 	{
 		preparedMods.clear();
 		customMods.clear();
+		customModsFactories.clear();
 		activeTweens = [];
 		scheduledEvents = [];
 	}
