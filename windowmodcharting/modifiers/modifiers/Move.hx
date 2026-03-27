@@ -1,6 +1,5 @@
 package windowmodcharting.modifiers.modifiers;
 
-@:keep
 class WindowModifier_MoveX extends WindowModifierBase
 {
 	public function new()
@@ -10,11 +9,10 @@ class WindowModifier_MoveX extends WindowModifierBase
 
 	override private function applyMod(result:WindowModResult, beat:Float):Void
 	{
-		result.x = value;
+		result.x += value;
 	}
 }
 
-@:keep
 class WindowModifier_MoveY extends WindowModifierBase
 {
 	public function new()
@@ -24,11 +22,10 @@ class WindowModifier_MoveY extends WindowModifierBase
 
 	override private function applyMod(result:WindowModResult, beat:Float):Void
 	{
-		result.y = value;
+		result.y += value;
 	}
 }
 
-@:keep
 class WindowModifier_MoveZ extends WindowModifierBase
 {
 	public function new()
@@ -38,7 +35,7 @@ class WindowModifier_MoveZ extends WindowModifierBase
 
 	override private function initDefaults():Void
 	{
-		subValues.set("strength", 0.05);
+		setSubValue("strength", 0.05);
 	}
 
 	override private function applyMod(result:WindowModResult, beat:Float):Void
@@ -47,6 +44,6 @@ class WindowModifier_MoveZ extends WindowModifierBase
 		s = s <= 0 ? 0.001 : s;
 		result.scaleX *= s;
 		result.scaleY *= s;
-		result.z = value;
+		result.z += value;
 	}
 }

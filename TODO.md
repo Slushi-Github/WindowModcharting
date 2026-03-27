@@ -2,7 +2,7 @@
 
 - [ ] A logo for the project.
 - [x] Add support for change the alpha of the window on Linux.
-- [ ] Add more modifiers.
+- [x] Add more modifiers.
 - [ ] Maybe fixes of some bugs on Linux?.
 - [ ] A editor (Maybe, but I'd really like to).
 - [ ] Add support for scripting systems of engines like Psych Engine.

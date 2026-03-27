@@ -1,8 +1,8 @@
 {
     "name": "window-modcharting",
     "license": "MIT",
-    "description": "A modcharting tool for the game window!",
-    "version": "0.2.0",
+    "description": "A modcharting tool for the game window on HaxeFlixel projects!",
+    "version": "0.2.2",
     "releasenote": "",
     "contributors": [
         "Slushi"

@@ -10,9 +10,11 @@ import funkin.backend.system.Conductor;
 import utils.Conductor;
 #elseif (WM_ENGINE == "V_SLICE")
 import funkin.Conductor;
+#elseif (WM_ENGINE == "PLUS_ENGINE")
+import funkin.audio.Conductor;
 #else
 #if !WM_CUSTOM_CONDUCTOR
-#error "[\x1b[38;5;1mERROR\x1b[0m | windowmodcharting.engineImplementation.ConductorImplementation] Can't find a supported Conductor implementation for this project!\nDefine WM_ENGINE or WM_CUSTOM_CONDUCTOR and assign the expected type to \"ConductorImplementation.custom_songPosition\" and \"ConductorImplementation.custom_crochet\"."
+#error "[\x1b[38;5;1mERROR\x1b[0m | windowmodcharting.engineImplementation.ConductorImplementation] Can't find a supported Conductor implementation for this project!\nDefine WM_CUSTOM_CONDUCTOR and assign the expected type to \"ConductorImplementation.custom_songPosition\" and \"ConductorImplementation.custom_crochet\"."
 #end
 #end
 
@@ -36,7 +38,7 @@ class ConductorImplementation
 
 	public static function get_songPosition():Null<Float>
 	{
-		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH")
+		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH" || WM_ENGINE == "PLUS_ENGINE")
 		return Conductor.songPosition;
         #elseif (WM_ENGINE == "V_SLICE")
         return Conductor.instance?.songPosition;
@@ -49,7 +51,7 @@ class ConductorImplementation
 
 	public static function get_crochet():Null<Float>
 	{
-		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH")
+		#if (WM_ENGINE == "PYSCH" || WM_ENGINE == "CODENAME" || WM_ENGINE == "ALE_PSYCH" || WM_ENGINE == "PLUS_ENGINE")
 		return Conductor.crochet;
         #elseif (WM_ENGINE == "V_SLICE")
         return Conductor.instance?.beatLengthMs;

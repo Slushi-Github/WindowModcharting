@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.2.2
+
+- Added the optional `options` parameter (`WinTweenOptions`) to `easeMod()` and
+  `easeModSubValue()`, allowing you to hook into the tween lifecycle via `onStart`,
+  `onUpdate` and `onComplete` callbacks, similar to HaxeFlixel FlxTween's `TweenOptions`. All
+  callbacks receive the `WindowModifierTween` instance as their only argument.
+  This parameter is optional and omitting it preserves the previous behavior.
+
+- added many new modifiers, check the [modifiers list](./docs/documentation/modifiers.md) for more information.
+
+- Added Conductor native implementation for [Plus Engine](https://github.com/Psych-Plus-Team/FNF-PlusEngine).
+
 ## v0.2.0
 
 - Added `registerCustomModFactory()` to register custom modifiers by passing a factory

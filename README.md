@@ -1,5 +1,5 @@
 <div align="center">
-  <!-- <img src="readme/logo.png" alt="WindowModcharting Logo" width="300"> -->
+  <!-- <img src="docs/logo.png" alt="WindowModcharting Logo" width="300"> -->
   <h1>WindowModcharting</h1>
   <h2 align="center"><em><strong>"What if the window could have modcharts too?"</strong></em></h2>
 </div>
@@ -17,17 +17,23 @@ This library makes the following easy:
 
 All through a simple and easy-to-use API.
 
+Quick links:
+- [**Native FNF' engines supported**](./docs/documentation/supportedEngines.md)
+- [**List of built-in modifiers**](./docs/documentation/modifiers.md)
+
 Additionally, this library has **experimental support** for Linux! Normally, in desktop environments like GNOME or KDE Plasma, the game window cannot go outside the screen, but with WindowModcharting you can simulate it by bridging Linux and Windows support without breaking effects! (Idea inspired by [*Rhythm Doctor Multi Window Plugin for Linux*](https://github.com/chocolateimage/rd-multiwindow-linux)). With an implementation based directly on OpenGL to tweak the game content without as much lag (You need to be using OpenFL in your project to use it, otherwise see below).
 
-If you were hoping to find things like modifying the color of the window border here, sorry but there is no safe equivalent on Linux so it is not included in WindowModcharting, save yourself the time of asking about that. I prefer cross-platform support between Linux, Windows and even MacOS, so I prefer to go for things that can be done across all 3 systems.
+If you were hoping to find things like modifying the color of the window border here, transparent windows, sorry but there is no safe equivalent on Linux so it is not included in WindowModcharting, save yourself the time of asking about that. I prefer cross-platform support between Linux, Windows and even MacOS, so I prefer to go for things that can be done across all 3 operating systems.
+
+The idea of multiple windows like [Rhythm Doctor](https://youtu.be/ozj7KweDjLI?si=6LrXC91VBvC33QTY) has certainly caught my attention, but I'm not sure how to implement it properly. Plus, based on past experience, it used to break the FNF' engines. If you have any ideas on how to implement it, I'd love to hear them!
 
 -----
 
 # Installation
 
-This project is made for projects based on Friday Night Funkin' (FNF) engines, but could work in others as long as they use Lime and HaxeFlixel.
+This project is made for projects based on Friday Night Funkin' engines, but could work in others as long as they use Lime and HaxeFlixel.
 
-Get and install the library (Not alvailable for now, but will be soon):
+Get and install the library from haxelib (Not alvailable for now, but will be soon, use the GitHub option):
 
 ```bash
 haxelib install window-modcharting
@@ -39,6 +45,12 @@ Or from GitHub:
 haxelib git window-modcharting https://github.com/Slushi-Github/WindowModcharting.git
 ```
 
+If you are on Linux, you need to install the following packages (If you don't use Debian, look for the equivalent for your distribution):
+
+```bash
+sudo apt install libxcb1-dev libx11-xcb-dev
+```
+
 First in your `project.xml` you must define the following:
 
 ```xml
@@ -47,13 +59,7 @@ First in your `project.xml` you must define the following:
 <define name="WM_ENGINE_VERSION" value="YOUR_ENGINE_VERSION"/>
 ```
 
-Replacing `YOUR_ENGINE` and `YOUR_ENGINE_VERSION` with the name and version of your engine which you can find [here](readme/documentation/supportedEngines.md).
-
-If you are on Linux, you need to install the following packages:
-
-```bash
-sudo apt install libxcb1-dev libx11-xcb-dev
-```
+Replacing `YOUR_ENGINE` and `YOUR_ENGINE_VERSION` with the name and version of your engine which you can find [here](./docs/documentation/supportedEngines.md).
 
 Now include the library in your project:
 
@@ -83,7 +89,7 @@ ConductorImplementation.custom_songPosition = () -> YOUR_CONDUCTOR.equivalentSon
 ConductorImplementation.custom_crochet = () -> YOUR_CONDUCTOR.equivalentCrochet;
 ```
 
-In case your `Conductor` or equivalent has those methods inside an instance that hasn't been declared yet in `Main.hx`, you'll need to find where it's convenient for you to declare them for WindowModcharting — as long as it's before creating the `WindowModManager` you won't have any problems.
+In case your `Conductor` or equivalent has those methods inside an instance that hasn't been declared yet in `Main.hx`, you'll need to find where it's convenient for you to declare them for WindowModcharting. It doesn't matter as long as it's before creating the `WindowModManager` you won't have any problems.
 
 About `WindowModManager`: this is the base object of WindowModcharting, containing all the methods that let you create modcharts. Let's add it to your PlayState (or also to an HScript if your engine supports it):
 
@@ -126,7 +132,7 @@ windowMod.prepareMod("MyTag", "MyModifier");
 
 `"MyTag"` is the tag that will be given to the modifier you are creating, and `"MyModifier"` is the class name of the modifier you are creating. All modifiers start with the prefix "WindowModifier_" — including it or not is optional, but it is recommended to only write what comes after the "_".
 
-The list of available modifiers can be found [here](readme/documentation/modifiers.md).
+The list of available modifiers can be found [here](./docs/documentation/modifiers.md).
 
 ### Add a custom modifier:
 
@@ -263,7 +269,7 @@ There are some defines you can put in your `project.xml` to customize the behavi
 
 # Credits
 
-- [Modcharting Tools](https://github.com/EdwhakKB/FNF-Modcharting-Tools): Where I got my inspiration and base for creating WindowModcharting.
+- [Modcharting Tools](https://github.com/EdwhakKB/FNF-Modcharting-Tools): Where I got my inspiration and base for creating WindowModcharting, and that's where I've used most of the math for the modifiers.
 
 - [Rhythm Doctor Multi Window Plugin for Linux](https://github.com/chocolateimage/rd-multiwindow-linux): Inspiration for Linux support to be able to move the game window *"outside"* the screen.
 

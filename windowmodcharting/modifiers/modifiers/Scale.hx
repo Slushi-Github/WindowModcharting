@@ -1,6 +1,5 @@
 package windowmodcharting.modifiers.modifiers;
 
-@:keep
 class WindowModifier_Scale extends WindowModifierBase
 {
 	public function new()
@@ -31,7 +30,6 @@ class WindowModifier_ScaleX extends WindowModifierBase
 	}
 }
 
-@:keep
 class WindowModifier_ScaleY extends WindowModifierBase
 {
 	public function new()

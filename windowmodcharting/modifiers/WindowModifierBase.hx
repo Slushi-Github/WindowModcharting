@@ -23,6 +23,7 @@ class WindowModifierBase
 	/**
 	 * Set default values for the modifier
 	 */
+	@:noCompletion
 	private function initDefaults():Void
 	{
 	}
@@ -32,6 +33,7 @@ class WindowModifierBase
 	 * @param beat The current beat
 	 * @return WindowModResult The calculated result
 	 */
+	@:noCompletion
 	public function calculate(beat:Float):WindowModResult
 	{
 		if (!dirty && beat == lastBeat && cachedResult != null)
@@ -63,6 +65,7 @@ class WindowModifierBase
 	{
 	}
 
+	@:noCompletion
 	public function markDirty():Void
 	{
 		dirty = true;

@@ -170,6 +170,17 @@ class WindowModManager extends FlxBasic
 		log('Custom mod "$name" registered', DEBUG);
 	}
 
+	/**
+	 * Registers a custom modifier factory so it can later be
+	 * instantiated by name via prepareMod().
+	 * 
+	 * ```haxe
+	 * registerCustomModFactory("MyMod", () -> new MyMod());
+	 * ```
+	 *
+	 * @param name        The modifier name to use in prepareMod()
+	 * @param modFactory  The function that creates the modifier instance
+	 */
 	public function registerCustomModFactory(name:String, modFactory:Void->WindowModifierBase):Void
 	{
 		#if !desktop
@@ -177,7 +188,7 @@ class WindowModManager extends FlxBasic
 		#end
 
 		if (name == null || name == "" || modFactory == null) {
-			log('Invalid parameters for registerCustomModClass()', ERROR);
+			log('Invalid parameters for registerCustomModFactory()', ERROR);
 			return;
 		}
 		else if (customModsFactories.exists(name)) {
@@ -191,7 +202,11 @@ class WindowModManager extends FlxBasic
 
 	/**
 	 * Prepares a modifier for later use.
-	 *
+	 * 
+	 * ```haxe
+	 * prepareMod("myModTag", "MyMod");
+	 * ```
+	 * 
 	 * @param tag         The tag to use for the prepared modifier
 	 * @param modifier    The name of the modifier to prepare
 	 */
@@ -235,8 +250,7 @@ class WindowModManager extends FlxBasic
 		final modClass = resolveClass(modifier);
 		if (modClass == null)
 		{
-			log('WindowMod "$modifier" not found. Paths used: [' + Constants.MODIFIER_CLASS_PATH + modifier + '], ['
-				+ Constants.MODIFIER_CLASS_PATH + Constants.MODIFIER_CLASS_PREFIX + modifier + ']', ERROR);
+			log('WindowMod "$modifier" not found.. It couldn\'t be found either if it\'s a custom modifier', ERROR);
 			return;
 		}
 		preparedMods.set(tag, {tag: tag, modifierName: modifier, instance: Type.createInstance(modClass, [])});
@@ -245,6 +259,11 @@ class WindowModManager extends FlxBasic
 
 	/**
 	 * Sets the value of a prepared mod at a specific beat
+	 * 
+	 * ```haxe
+	 * setMod(1.0, {myModTag: 1.0});
+	 * ```
+	 * 
 	 * @param beat The beat to set to
 	 * @param props The mods with values to set
 	 */
@@ -273,12 +292,17 @@ class WindowModManager extends FlxBasic
 
 	/**
 	 * Eases the value of a prepared mod at a specific beat
+	 * 
+	 * ```haxe
+	 * easeMod(1.0, 3.0, ease.linear, {myModTag: 1.0});
+	 * ```
+	 * 
 	 * @param beat The beat to ease to
 	 * @param duration The duration of the ease in beats
 	 * @param easeFunc The ease function
 	 * @param props The mods with values to ease
 	 */
-	public function easeMod(beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
+	public function easeMod(beat:Float, duration:Null<Float>, easeFunc:Float->Float, props:Dynamic, ?options:WinTweenOptions):Void
 	{
 		#if !desktop
 		return;
@@ -294,7 +318,7 @@ class WindowModManager extends FlxBasic
 				if (!preparedMods.exists(field))
 					continue;
 				final mod = preparedMods.get(field).instance;
-				activeTweens.push(new WindowModifierTween(mod, "value", mod.value, Reflect.field(props, field), duration, beat, easeFunc));
+				activeTweens.push(new WindowModifierTween(mod, "value", mod.value, Reflect.field(props, field), duration, beat, easeFunc, options));
 			}
 		});
 		log('Added ease for [' + Reflect.fields(props).join(", ") + '] at beat $beat.', DEBUG);
@@ -302,6 +326,10 @@ class WindowModManager extends FlxBasic
 
 	/**
 	 * Sets the sub value of a prepared mod at a specific beat
+	 * 
+	 * ```haxe
+	 * setModSubValue("myModTag", 1.0, {speed: 1.0});
+	 * ```
 	 * @param tag The tag of the prepared mod
 	 * @param beat The beat to set to
 	 * @param props The sub values with values to set
@@ -329,13 +357,18 @@ class WindowModManager extends FlxBasic
 
 	/**
 	 * Eases the sub value of a prepared mod at a specific beat
+	 * 
+	 * ```haxe
+	 * easeModSubValue("myModTag", 1.0, 3.0, ease.linear, {speed: 1.0});
+	 * ```
+	 * 
 	 * @param tag The tag of the prepared mod
 	 * @param beat The beat to ease to
 	 * @param duration The duration of the ease in beats
 	 * @param easeFunc The ease function
 	 * @param props The sub values with values to ease
 	 */
-	public function easeModSubValue(tag:String, beat:Float, duration:Float, easeFunc:Float->Float, props:Dynamic):Void
+	public function easeModSubValue(tag:String, beat:Float, duration:Null<Float>, easeFunc:Float->Float, props:Dynamic, ?options:WinTweenOptions):Void
 	{
 		#if !desktop
 		return;
@@ -350,9 +383,18 @@ class WindowModManager extends FlxBasic
 				return;
 			final mod = preparedMods.get(tag).instance;
 			for (field in Reflect.fields(props))
-				activeTweens.push(new WindowModifierTween(mod, field, mod.getSubValue(field), Reflect.field(props, field), duration, beat, easeFunc));
+				activeTweens.push(new WindowModifierTween(mod, field, mod.getSubValue(field), Reflect.field(props, field), duration, beat, easeFunc, options));
 			log('Added ease for sub value for [' + Reflect.fields(props).join(", ") + '] at beat $beat.', DEBUG);
 		});
+	}
+
+	/**
+	 * Remove a prepared mod
+	 * @param tag The tag of the prepared mod
+	 */
+	public function removeMod(tag:String):Void
+	{
+		preparedMods.remove(tag);
 	}
 
 	/**
@@ -584,11 +626,6 @@ class WindowModManager extends FlxBasic
 	public function clearScheduled():Void
 	{
 		scheduledEvents = [];
-	}
-
-	public function removeModifier(tag:String):Void
-	{
-		preparedMods.remove(tag);
 	}
 
 	public function clear():Void

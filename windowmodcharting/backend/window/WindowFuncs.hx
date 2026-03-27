@@ -123,6 +123,18 @@ class WindowFuncs
 		Application.current.window.focus();
 	}
 
+	public static function getScreenSize():{
+		width:Float,
+		height:Float
+	}
+	{
+		final bounds = Application.current.window.display.bounds;
+		return {
+			width: bounds.width,
+			height: bounds.height
+		};
+	}
+
 	/**
 	 * Resize the game to a custom size
 	 * 

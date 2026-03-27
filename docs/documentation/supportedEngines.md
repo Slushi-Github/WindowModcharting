@@ -15,3 +15,7 @@ Define `WM_ENGINE` as `ALE_PSYCH` in `Project.xml`, `WM_ENGINE_VERSION` is not r
 ## Base Game / V-Slice
 
 Define `WM_ENGINE` as `V_SLICE` in `Project.xml`, `WM_ENGINE_VERSION` is not required.
+
+## Plus Engine
+
+Define `WM_ENGINE` as `PLUS_ENGINE` in `Project.xml`, `WM_ENGINE_VERSION` is not required.

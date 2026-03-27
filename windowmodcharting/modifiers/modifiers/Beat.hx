@@ -1,41 +1,94 @@
 package windowmodcharting.modifiers.modifiers;
 
-@:keep
-class WindowModifier_BeatX extends WindowModifierBase
+class WinModBaseBeat extends WindowModifierBase
+{
+	override private function initDefaults():Void
+	{
+		setSubValue("speed", 1.0);
+		setSubValue("mult", 1.0);
+		setSubValue("offset", 0.0);
+		setSubValue("alternate", 1.0);
+		setSubValue("fAccelTime", 0.2);
+		setSubValue("fTotalTime", 0.5);
+	}
+}
+
+class WindowModifier_BeatX extends WinModBaseBeat
 {
 	public function new()
 	{
 		super("beatX");
 	}
 
-	override private function initDefaults():Void
-	{
-		subValues.set("accelTime", 0.2);
-		subValues.set("totalTime", 0.5);
-	}
-
 	override private function applyMod(result:WindowModResult, beat:Float):Void
 	{
-		result.x += value * Math_Beat.getMath(beat, getSubValue("accelTime"), getSubValue("totalTime"));
+		result.x += Math_Beat.getMath(value, beat, subValues);
 	}
 }
 
-@:keep
-class WindowModifier_BeatY extends WindowModifierBase
+class WindowModifier_BeatY extends WinModBaseBeat
 {
 	public function new()
 	{
 		super("beatY");
 	}
 
-	override private function initDefaults():Void
+	override private function applyMod(result:WindowModResult, beat:Float):Void
 	{
-		subValues.set("accelTime", 0.2);
-		subValues.set("totalTime", 0.5);
+		result.y += Math_Beat.getMath(value, beat, subValues);
+	}
+}
+
+class WindowModifier_BeatZ extends WinModBaseBeat
+{
+	public function new()
+	{
+		super("beatZ");
 	}
 
 	override private function applyMod(result:WindowModResult, beat:Float):Void
 	{
-		result.y += value * Math_Beat.getMath(beat, getSubValue("accelTime"), getSubValue("totalTime"));
+		result.z += Math_Beat.getMath(value, beat, subValues);
 	}
 }
+
+class WindowModifier_BeatScale extends WinModBaseBeat
+{
+	public function new()
+	{
+		super("beatScale");
+	}
+
+	override private function applyMod(result:WindowModResult, beat:Float):Void
+	{
+		result.scaleX += Math_Beat.getMath(value, beat, subValues);
+		result.scaleY += Math_Beat.getMath(value, beat, subValues);
+	}
+}
+
+class WindowModifier_BeatScaleX extends WinModBaseBeat
+{
+	public function new()
+	{
+		super("beatScaleX");
+	}
+
+	override private function applyMod(result:WindowModResult, beat:Float):Void
+	{
+		result.scaleX += Math_Beat.getMath(value, beat, subValues);
+	}
+}
+
+class WindowModifier_BeatScaleY extends WinModBaseBeat
+{
+	public function new()
+	{
+		super("beatScaleY");
+	}
+
+	override private function applyMod(result:WindowModResult, beat:Float):Void
+	{
+		result.scaleY += Math_Beat.getMath(value, beat, subValues);
+	}
+}
+
