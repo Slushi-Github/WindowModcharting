@@ -97,7 +97,7 @@
 - `SineScaleX`
 - `SineScaleY`
 
-## Sine sub values:
+### Sine sub values:
 
 * `speed` - Default: 1
 
